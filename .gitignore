@@ -1,32 +1,93 @@
-# Maven
+# ── Maven Build Output ─────────────────────────────────────────
 target/
 *.war
 *.ear
+*.jar
 *.zip
 *.tar.gz
 *.rar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
 
-# IDEs
-.project
-.classpath
-.settings/
+# ── Java Compiled ──────────────────────────────────────────────
+*.class
+
+# ── IDEs ───────────────────────────────────────────────────────
+# IntelliJ IDEA
 .idea/
 *.iml
 *.iws
+*.ipr
+out/
 
-# Logs
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# VS Code
+.vscode/
+
+# NetBeans
+nbproject/
+nbbuild/
+nbdist/
+nb-configuration.xml
+
+# ── Logs ───────────────────────────────────────────────────────
 log/
+logs/
 *.log
 
-# OS
+# ── OS Files ──────────────────────────────────────────────────
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 .DS_Store
 
-# Java
-*.class
+# ── Spring Boot ────────────────────────────────────────────────
+HELP.md
+.mvn/
+mvnw
+mvnw.cmd
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# Node (if any)
+# ── Docker ─────────────────────────────────────────────────────
+.docker/
+
+# ── RabbitMQ data volumes ──────────────────────────────────────
+rabbitmq_data/
+
+# ── Keycloak ───────────────────────────────────────────────────
+keycloak_data/
+
+# ── Node (if used for any service) ─────────────────────────────
 node_modules/
+package-lock.json
 
-# Docker build artifacts
-*.jar
+# ── Tomcat runtime (if checked out locally) ────────────────────
+apache-tomcat-*/
+catalina.out
+
+# ── JMeter results ─────────────────────────────────────────────
+*.jtl
+jmeter.log
+
+# ── SOAP UI ────────────────────────────────────────────────────
+*.soapui
+*-soapui-project.xml.bak
+
+# ── Environment / secrets ─────────────────────────────────────
+.env
+*.env
+*.pem
+*.key
+*.keystore
+*.jks
