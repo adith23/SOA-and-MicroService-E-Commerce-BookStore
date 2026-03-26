@@ -14,9 +14,9 @@ import org.springframework.security.web.SecurityFilterChain;
  * Q13: OAuth2 configuration for securing the REST API.
  *
  * All /api/v1/orders/** endpoints require a valid JWT Bearer token
- * issued by Keycloak (configured in application.yml).
+ * issued by Spring Authorization Server (AuthServer on port 9000).
  *
- * Token validation uses the JWK Set URI from Keycloak automatically.
+ * Token validation uses the JWK Set URI discovered from the issuer-uri.
  */
 @Configuration
 @EnableWebSecurity

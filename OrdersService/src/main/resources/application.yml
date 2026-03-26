@@ -5,15 +5,14 @@ spring:
   application:
     name: orders-service
 
-  # OAuth2 Resource Server - validates JWT tokens issued by Keycloak
+  # OAuth2 Resource Server - validates JWT tokens issued by Spring Authorization Server
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000/realms/globalbooks
-          # jwk-set-uri is auto-discovered from issuer-uri
-          # Uncomment below if you want to specify explicitly:
-          # jwk-set-uri: http://localhost:9000/realms/globalbooks/protocol/openid-connect/certs
+          issuer-uri: http://localhost:9000
+          # JWK Set URI auto-discovered from issuer-uri via:
+          # http://localhost:9000/.well-known/openid-configuration
 
   # RabbitMQ connection
   rabbitmq:
@@ -41,7 +40,6 @@ rabbitmq:
   exchange: order.exchange
   routing-key:
     payment: order.payment
-    shipping: order.shipping
 
 # Logging
 logging:

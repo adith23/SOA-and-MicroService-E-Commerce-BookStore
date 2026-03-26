@@ -119,7 +119,7 @@ public class WsSecurityHandler implements SOAPHandler<SOAPMessageContext> {
     private String extractChildText(SOAPElement parent, String localName) {
         Iterator<?> it = parent.getChildElements(new QName(WSSE_NS, localName));
         if (it.hasNext()) {
-            return ((SOAPElement) it.next()).getValue();
+            return ((SOAPElement) it.next()).getTextContent();
         }
         return null;
     }
@@ -131,6 +131,6 @@ public class WsSecurityHandler implements SOAPHandler<SOAPMessageContext> {
         SOAPFault fault = body.addFault();
         fault.setFaultString("WS-Security violation: " + message);
         fault.setFaultCode("wsse:FailedAuthentication");
-        throw new RuntimeException("WS-Security violation: " + message);
+        throw new javax.xml.ws.soap.SOAPFaultException(fault);
     }
 }

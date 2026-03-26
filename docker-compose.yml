@@ -21,19 +21,17 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── Keycloak (OAuth2 Authorization Server) ──────────────────────────────
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    container_name: globalbooks-keycloak
+  # ── AuthServer (Spring Authorization Server – OAuth2) ──────────────────
+  auth-server:
+    build:
+      context: ./AuthServer
+      dockerfile: Dockerfile
+    container_name: globalbooks-auth
     ports:
-      - "9000:8080"
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-    command: start-dev
+      - "9000:9000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
-      interval: 15s
+      test: ["CMD", "curl", "-f", "http://localhost:9000/.well-known/openid-configuration"]
+      interval: 10s
       timeout: 5s
       retries: 10
 
@@ -47,11 +45,11 @@ services:
       - "8081:8081"
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/globalbooks
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://auth-server:9000
     depends_on:
       rabbitmq:
         condition: service_healthy
-      keycloak:
+      auth-server:
         condition: service_healthy
 
   # ── PaymentsService (Spring Boot + RabbitMQ consumer) ──────────────────

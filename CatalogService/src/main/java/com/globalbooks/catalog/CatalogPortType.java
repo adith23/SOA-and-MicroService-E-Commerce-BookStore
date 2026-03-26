@@ -7,6 +7,8 @@ import com.globalbooks.catalog.model.PriceResponse;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import javax.xml.ws.RequestWrapper;
+import javax.xml.ws.ResponseWrapper;
 import java.util.List;
 
 /**
@@ -20,13 +22,19 @@ import java.util.List;
 public interface CatalogPortType {
 
     @WebMethod(operationName = "getBookById")
-    Book getBookById(@WebParam(name = "bookId") String bookId)
+    @RequestWrapper(localName = "getBookByIdRequest", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    @ResponseWrapper(localName = "getBookByIdResponse", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    Book getBookById(@WebParam(name = "bookId", targetNamespace = "http://catalog.globalbooks.com/types/v1") String bookId)
             throws BookNotFoundException;
 
     @WebMethod(operationName = "getBookPrice")
-    PriceResponse getBookPrice(@WebParam(name = "bookId") String bookId)
+    @RequestWrapper(localName = "getBookPriceRequest", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    @ResponseWrapper(localName = "getBookPriceResponse", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    PriceResponse getBookPrice(@WebParam(name = "bookId", targetNamespace = "http://catalog.globalbooks.com/types/v1") String bookId)
             throws BookNotFoundException;
 
     @WebMethod(operationName = "searchBooks")
-    List<Book> searchBooks(@WebParam(name = "keyword") String keyword);
+    @RequestWrapper(localName = "searchBooksRequest", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    @ResponseWrapper(localName = "searchBooksResponse", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    List<Book> searchBooks(@WebParam(name = "keyword", targetNamespace = "http://catalog.globalbooks.com/types/v1") String keyword);
 }

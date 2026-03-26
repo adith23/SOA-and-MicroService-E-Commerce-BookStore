@@ -11,6 +11,11 @@ spring:
     username: guest
     password: guest
     virtual-host: /
+    # Publisher confirms for outbound messages to shipping.queue
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
     listener:
       simple:
         # Q11: Retry mechanism with exponential backoff
@@ -24,6 +29,12 @@ spring:
         default-requeue-rejected: false
         acknowledge-mode: auto
         prefetch: 10                  # Q14: QoS prefetch count
+
+# RabbitMQ exchange and routing key for forwarding to ShippingService
+rabbitmq:
+  exchange: order.exchange
+  routing-key:
+    shipping: order.shipping
 
 logging:
   level:

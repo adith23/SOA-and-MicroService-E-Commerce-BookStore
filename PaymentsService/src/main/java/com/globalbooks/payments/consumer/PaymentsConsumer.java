@@ -3,6 +3,8 @@ package com.globalbooks.payments.consumer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -14,21 +16,37 @@ import java.util.logging.Logger;
  * Q10: Consumer role – listens on payments.queue.
  * Q11: Retry handled via Spring AMQP retry config in application.yml.
  *       After max retries, message goes to payments.dlq (DLQ).
+ *
+ * Chained flow:
+ *   1. Consumes order event from payments.queue
+ *   2. Processes payment
+ *   3. On SUCCESS → publishes to shipping.queue for ShippingService
+ *   4. On FAILURE → retries 3× then dead-letters to payments.dlq
+ *      (ShippingService is NEVER notified for failed payments)
  */
 @Component
 public class PaymentsConsumer {
 
     private static final Logger LOG = Logger.getLogger(PaymentsConsumer.class.getName());
-    private final ObjectMapper objectMapper;
 
-    public PaymentsConsumer() {
+    private final ObjectMapper objectMapper;
+    private final RabbitTemplate rabbitTemplate;
+
+    @Value("${rabbitmq.exchange}")
+    private String exchange;
+
+    @Value("${rabbitmq.routing-key.shipping}")
+    private String shippingRoutingKey;
+
+    public PaymentsConsumer(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
         this.objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule());
     }
 
     /**
      * Handles order.created events from payments.queue.
-     * On success → message is ACKed automatically.
+     * On success → processes payment, then forwards to shipping.queue.
      * On exception → Spring retry triggers (3 attempts), then DLQ.
      */
     @RabbitListener(queues = "payments.queue")
@@ -45,14 +63,20 @@ public class PaymentsConsumer {
             LOG.info(String.format("Processing payment | orderId=%s | customerId=%s | total=%s",
                 orderId, customerId, totalAmount));
 
-            // Simulate payment processing
+            // ── Step 1: Process payment ─────────────────────────────────
             processPayment(orderId, customerId, totalAmount);
-
             LOG.info("Payment processed successfully for orderId: " + orderId);
+
+            // ── Step 2: Forward to ShippingService ──────────────────────
+            // Only reaches here if payment succeeded (no exception thrown)
+            rabbitTemplate.convertAndSend(exchange, shippingRoutingKey, message);
+            LOG.info("Forwarded to shipping queue for orderId: " + orderId);
 
         } catch (Exception e) {
             LOG.log(Level.SEVERE, "Payment processing failed – will retry or go to DLQ", e);
             // Re-throw to trigger Spring AMQP retry mechanism
+            // If all retries fail → message goes to payments.dlq
+            // ShippingService is NEVER notified for failed payments
             throw new RuntimeException("Payment processing failed: " + e.getMessage(), e);
         }
     }
@@ -62,7 +86,6 @@ public class PaymentsConsumer {
      * In production: call payment gateway (Stripe, PayPal, etc.)
      */
     private void processPayment(String orderId, String customerId, Object amount) {
-        // Simulate processing delay
         LOG.info(String.format("  → Charging customer %s for order %s, amount: %s USD",
             customerId, orderId, amount));
 

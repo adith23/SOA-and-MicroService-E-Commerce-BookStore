@@ -8,7 +8,9 @@ import com.globalbooks.catalog.model.PriceResponse;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import javax.jws.soap.SOAPBinding;
+import javax.jws.HandlerChain;
+import javax.xml.ws.RequestWrapper;
+import javax.xml.ws.ResponseWrapper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,11 +37,7 @@ import java.util.stream.Collectors;
     wsdlLocation    = "WEB-INF/wsdl/catalog.wsdl",
     endpointInterface = "com.globalbooks.catalog.CatalogPortType"
 )
-@SOAPBinding(
-    style           = SOAPBinding.Style.DOCUMENT,
-    use             = SOAPBinding.Use.LITERAL,
-    parameterStyle  = SOAPBinding.ParameterStyle.WRAPPED
-)
+@HandlerChain(file = "handlers.xml")
 public class CatalogServiceImpl implements CatalogPortType {
 
     /**
@@ -84,7 +82,9 @@ public class CatalogServiceImpl implements CatalogPortType {
     @Override
     @WebMethod(operationName = "getBookById",
                action = "http://catalog.globalbooks.com/v1/getBookById")
-    public Book getBookById(@WebParam(name = "bookId") String bookId)
+    @RequestWrapper(localName = "getBookByIdRequest", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    @ResponseWrapper(localName = "getBookByIdResponse", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    public Book getBookById(@WebParam(name = "bookId", targetNamespace = "http://catalog.globalbooks.com/types/v1") String bookId)
             throws BookNotFoundException {
 
         if (bookId == null || bookId.trim().isEmpty()) {
@@ -115,7 +115,9 @@ public class CatalogServiceImpl implements CatalogPortType {
     @Override
     @WebMethod(operationName = "getBookPrice",
                action = "http://catalog.globalbooks.com/v1/getBookPrice")
-    public PriceResponse getBookPrice(@WebParam(name = "bookId") String bookId)
+    @RequestWrapper(localName = "getBookPriceRequest", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    @ResponseWrapper(localName = "getBookPriceResponse", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    public PriceResponse getBookPrice(@WebParam(name = "bookId", targetNamespace = "http://catalog.globalbooks.com/types/v1") String bookId)
             throws BookNotFoundException {
 
         Book book = getBookById(bookId);
@@ -131,7 +133,9 @@ public class CatalogServiceImpl implements CatalogPortType {
     @Override
     @WebMethod(operationName = "searchBooks",
                action = "http://catalog.globalbooks.com/v1/searchBooks")
-    public List<Book> searchBooks(@WebParam(name = "keyword") String keyword) {
+    @RequestWrapper(localName = "searchBooksRequest", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    @ResponseWrapper(localName = "searchBooksResponse", targetNamespace = "http://catalog.globalbooks.com/types/v1")
+    public List<Book> searchBooks(@WebParam(name = "keyword", targetNamespace = "http://catalog.globalbooks.com/types/v1") String keyword) {
 
         if (keyword == null || keyword.trim().isEmpty()) {
             return new ArrayList<>(CATALOG.values());

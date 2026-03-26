@@ -13,9 +13,15 @@ import java.util.logging.Logger;
 
 /**
  * Publishes order events to RabbitMQ topic exchange.
- * Q10: Producer role – publishes to order.exchange with routing keys
+ * Q10: Producer role – publishes to order.exchange with routing key:
  *       order.payment  → consumed by PaymentsService
- *       order.shipping → consumed by ShippingService
+ *
+ * Chained flow:
+ *   OrdersService → payments.queue → PaymentsService
+ *   PaymentsService (on success) → shipping.queue → ShippingService
+ *
+ * Shipping is NOT triggered here — it is triggered by PaymentsService
+ * only after successful payment (event-driven choreography).
  */
 @Component
 public class OrderEventPublisher {
@@ -31,9 +37,6 @@ public class OrderEventPublisher {
     @Value("${rabbitmq.routing-key.payment}")
     private String paymentRoutingKey;
 
-    @Value("${rabbitmq.routing-key.shipping}")
-    private String shippingRoutingKey;
-
     public OrderEventPublisher(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
         this.objectMapper   = new ObjectMapper()
@@ -42,8 +45,8 @@ public class OrderEventPublisher {
     }
 
     /**
-     * Publishes an order.created event to both payment and shipping queues
-     * via the topic exchange.
+     * Publishes an order.created event to the payments queue ONLY.
+     * ShippingService will be notified by PaymentsService after payment succeeds.
      */
     public void publishOrderCreated(Order order) {
         try {
@@ -52,10 +55,6 @@ public class OrderEventPublisher {
             // Payment routing: order.exchange → order.payment → payments.queue
             rabbitTemplate.convertAndSend(exchange, paymentRoutingKey, payload);
             LOG.info("Published payment event for orderId: " + order.getOrderId());
-
-            // Shipping routing: order.exchange → order.shipping → shipping.queue
-            rabbitTemplate.convertAndSend(exchange, shippingRoutingKey, payload);
-            LOG.info("Published shipping event for orderId: " + order.getOrderId());
 
         } catch (JsonProcessingException e) {
             LOG.log(Level.SEVERE, "Failed to serialize order for messaging: " + order.getOrderId(), e);
