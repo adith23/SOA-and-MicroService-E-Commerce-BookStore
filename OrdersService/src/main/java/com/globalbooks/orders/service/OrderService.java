@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Business logic for order creation and retrieval.
- * Q7: OrdersService REST API.
  */
 @Service
 public class OrderService {

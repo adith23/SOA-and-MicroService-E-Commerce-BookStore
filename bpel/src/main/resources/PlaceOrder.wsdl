@@ -12,9 +12,11 @@
     name="PlaceOrderService">
 
     <wsdl:types>
-        <xsd:schema targetNamespace="http://globalbooks.com/bpel/v1/placeorder" elementFormDefault="qualified">
-            <!-- Ensure we can import the standard order contract -->
-            <xsd:import namespace="http://globalbooks.com/order-contract/v1" schemaLocation="order-contract.xsd" />
+        <xsd:schema targetNamespace="http://globalbooks.com/bpel/v1/placeorder"
+            elementFormDefault="qualified">
+            <!-- Ensure import the standard order contract -->
+            <xsd:import namespace="http://globalbooks.com/order-contract/v1"
+                schemaLocation="order-contract.xsd" />
 
             <!-- BPEL Client Incoming Request Structure -->
             <xsd:element name="placeOrderRequest">
@@ -74,9 +76,15 @@
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
         <wsdl:operation name="placeOrder">
             <soap:operation soapAction="http://globalbooks.com/bpel/v1/placeorder/placeOrder" />
-            <wsdl:input><soap:body use="literal" /></wsdl:input>
-            <wsdl:output><soap:body use="literal" /></wsdl:output>
-            <wsdl:fault name="PlaceOrderFault"><soap:fault name="PlaceOrderFault" use="literal" /></wsdl:fault>
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+            <wsdl:fault name="PlaceOrderFault">
+                <soap:fault name="PlaceOrderFault" use="literal" />
+            </wsdl:fault>
         </wsdl:operation>
     </wsdl:binding>
 

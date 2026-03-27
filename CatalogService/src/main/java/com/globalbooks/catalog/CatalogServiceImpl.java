@@ -19,18 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * GlobalBooks CatalogService - SOAP Web Service Implementation
- *
- * Exposes three operations:
- *   - getBookById(bookId)  -> Book
- *   - getBookPrice(bookId) -> PriceResponse
- *   - searchBooks(keyword) -> List<Book>
- *
- * Contract-first: WSDL is pre-defined in WEB-INF/wsdl/catalog.wsdl
- *
- * Q5: Service annotations, sun-jaxws.xml config, web.xml config
- */
+/** CatalogService - SOAP Web Service Implementation**/
 @WebService(
     serviceName     = "CatalogService",
     portName        = "CatalogPort",
@@ -38,12 +27,11 @@ import java.util.stream.Collectors;
     wsdlLocation    = "WEB-INF/wsdl/catalog.wsdl",
     endpointInterface = "com.globalbooks.catalog.CatalogPortType"
 )
-// @HandlerChain(file = "handlers.xml") // Temporary: Disabled WS-Security to unblock BPEL flow Testing
+@HandlerChain(file = "handlers.xml") 
 public class CatalogServiceImpl implements CatalogPortType {
 
     /**
-     * In-memory catalog – simulates a database.
-     * In production this would be replaced with a JPA repository or external DB.
+     * In-memory catalog to simulates a database.
      */
     private static final Map<String, Book> CATALOG = new HashMap<>();
 
@@ -76,7 +64,7 @@ public class CatalogServiceImpl implements CatalogPortType {
     /**
      * Retrieves full book details by ID.
      *
-     * @param bookId unique book identifier (e.g. "B001")
+     * @param bookId unique book identifier 
      * @return Book object with all fields populated
      * @throws BookNotFoundException if no book exists with the given ID
      */
@@ -137,10 +125,10 @@ public class CatalogServiceImpl implements CatalogPortType {
     }
 
     /**
-     * Searches books by title keyword (case-insensitive).
+     * Searches books by title keyword 
      *
      * @param keyword search term to match against book titles
-     * @return list of matching books (empty list if none found)
+     * @return list of matching books 
      */
     @Override
     @WebMethod(operationName = "searchBooks",

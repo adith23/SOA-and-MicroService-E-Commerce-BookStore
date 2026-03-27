@@ -12,7 +12,6 @@ import java.util.List;
 
 /**
  * Request body for POST /api/v1/orders
- * Q7: JSON Schema for order creation
  */
 @JacksonXmlRootElement(localName = "createOrderRequest", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
 public class CreateOrderRequest {

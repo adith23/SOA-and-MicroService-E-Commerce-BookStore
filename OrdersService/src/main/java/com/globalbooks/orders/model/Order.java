@@ -12,7 +12,6 @@ import java.util.List;
 
 /**
  * Order domain model.
- * Q7: OrdersService REST API design.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JacksonXmlRootElement(localName = "order", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)

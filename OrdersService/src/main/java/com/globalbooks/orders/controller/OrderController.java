@@ -15,10 +15,6 @@ import java.util.List;
 
 /**
  * REST controller for OrdersService.
- * Q7: Endpoint definitions – POST /orders, GET /orders/{id}
- *
- * Base URL: /api/v1/orders
- * Secured by: OAuth2 JWT Bearer token (Spring Security configured in OAuth2Config.java)
  */
 @RestController
 @RequestMapping("/api/v1/orders")

@@ -19,7 +19,7 @@ public class WsSecurityHandler implements SOAPHandler<SOAPMessageContext> {
     private static final String WSSE_NS =
         "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
 
-    // Credentials (in production: load from a user store / LDAP)
+    // Credentials
     private static final String VALID_USERNAME = "catalog-client";
     private static final String VALID_PASSWORD = "s3cur3P@ss";
 

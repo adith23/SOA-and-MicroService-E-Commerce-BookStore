@@ -13,15 +13,6 @@ import java.util.logging.Logger;
 
 /**
  * Publishes order events to RabbitMQ topic exchange.
- * Q10: Producer role – publishes to order.exchange with routing key:
- *       order.payment  → consumed by PaymentsService
- *
- * Chained flow:
- *   OrdersService → payments.queue → PaymentsService
- *   PaymentsService (on success) → shipping.queue → ShippingService
- *
- * Shipping is NOT triggered here — it is triggered by PaymentsService
- * only after successful payment (event-driven choreography).
  */
 @Component
 public class OrderEventPublisher {

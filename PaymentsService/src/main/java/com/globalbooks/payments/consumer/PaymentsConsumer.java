@@ -13,16 +13,6 @@ import java.util.logging.Logger;
 
 /**
  * RabbitMQ consumer for PaymentsService.
- * Q10: Consumer role – listens on payments.queue.
- * Q11: Retry handled via Spring AMQP retry config in application.yml.
- *       After max retries, message goes to payments.dlq (DLQ).
- *
- * Chained flow:
- *   1. Consumes order event from payments.queue
- *   2. Processes payment
- *   3. On SUCCESS → publishes to shipping.queue for ShippingService
- *   4. On FAILURE → retries 3× then dead-letters to payments.dlq
- *      (ShippingService is NEVER notified for failed payments)
  */
 @Component
 public class PaymentsConsumer {

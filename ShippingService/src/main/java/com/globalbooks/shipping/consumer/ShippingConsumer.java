@@ -11,8 +11,6 @@ import java.util.logging.Logger;
 
 /**
  * RabbitMQ consumer for ShippingService.
- * Q10: Consumer role – listens on shipping.queue.
- * Q11: Retry + DLQ configured in application.yml.
  */
 @Component
 public class ShippingConsumer {
@@ -55,7 +53,6 @@ public class ShippingConsumer {
 
     /**
      * Simulates shipment scheduling.
-     * In production: call courier API (DHL, FedEx, UPS, etc.)
      */
     private void scheduleShipment(String orderId, String customerId, Map<?, ?> address) {
         String destination = address != null

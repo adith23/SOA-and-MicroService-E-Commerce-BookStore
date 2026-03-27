@@ -149,7 +149,7 @@
     <!-- Orchestration Logic -->
     <sequence name="MainProcessSequence">
 
-        <!-- Requirement 8: Receive Activity -->
+        <!-- Receive Activity -->
         <receive name="ReceiveOrder" partnerLink="client" portType="tns:PlaceOrderPortType"
             operation="placeOrder" variable="placeOrderRequest" createInstance="yes" />
 
@@ -229,7 +229,7 @@
             </copy>
         </assign>
 
-        <!-- Requirement 8: Loop for price lookup -->
+        <!-- Loop for price lookup -->
         <forEach counterName="itemIndex" parallel="no" name="PriceLookupLoop">
             <!-- Ensure loop processes correctly up to the exact count -->
             <startCounterValue>1</startCounterValue>
@@ -269,12 +269,12 @@
             </copy>
         </assign>
 
-        <!-- Requirement 8: Invocation of OrdersService (via Adapter Layer) -->
+        <!-- Invocation of OrdersService (via Adapter Layer) -->
         <invoke name="InvokeRESTAdapter" partnerLink="ordersPartner" portType="ord:OrdersPortType"
             operation="createOrder" inputVariable="createOrderRequest"
             outputVariable="createOrderResponse" />
 
-        <!-- Requirement 8: Reply to client -->
+        <!-- Reply to client -->
         <assign name="MapFinalReply">
             <copy>
                 <from>string($createOrderResponse.parameters/gbord:orderId)</from>
