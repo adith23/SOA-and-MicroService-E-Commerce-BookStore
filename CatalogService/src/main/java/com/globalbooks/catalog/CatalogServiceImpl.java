@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
     wsdlLocation    = "WEB-INF/wsdl/catalog.wsdl",
     endpointInterface = "com.globalbooks.catalog.CatalogPortType"
 )
-@HandlerChain(file = "handlers.xml") 
+@HandlerChain(file = "handlers.xml")
 public class CatalogServiceImpl implements CatalogPortType {
 
     /**

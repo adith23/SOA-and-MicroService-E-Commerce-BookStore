@@ -92,4 +92,4 @@ jmeter.log
 *.keystore
 *.jks
 
-.docs
+*.docs
