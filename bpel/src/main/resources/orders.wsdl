@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://orders.globalbooks.com/v1"
+    xmlns:gbord="http://globalbooks.com/order-contract/v1"
+    targetNamespace="http://orders.globalbooks.com/v1"
+    name="OrdersService">
+
+    <wsdl:types>
+        <xsd:schema>
+            <xsd:import namespace="http://globalbooks.com/order-contract/v1"
+                schemaLocation="order-contract.xsd" />
+        </xsd:schema>
+    </wsdl:types>
+
+    <wsdl:message name="CreateOrderRequestMessage">
+        <wsdl:part name="parameters" element="gbord:createOrderRequest" />
+    </wsdl:message>
+
+    <wsdl:message name="CreateOrderResponseMessage">
+        <wsdl:part name="parameters" element="gbord:order" />
+    </wsdl:message>
+
+    <wsdl:message name="OrderSubmissionFaultMessage">
+        <wsdl:part name="fault" element="gbord:errorResponse" />
+    </wsdl:message>
+
+    <wsdl:portType name="OrdersPortType">
+        <wsdl:operation name="createOrder">
+            <wsdl:input message="tns:CreateOrderRequestMessage" />
+            <wsdl:output message="tns:CreateOrderResponseMessage" />
+            <wsdl:fault name="OrderSubmissionFault" message="tns:OrderSubmissionFaultMessage" />
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="OrdersSoapBinding" type="tns:OrdersPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+        <wsdl:operation name="createOrder">
+            <soap:operation soapAction="http://orders.globalbooks.com/v1/createOrder" />
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+            <wsdl:fault name="OrderSubmissionFault">
+                <soap:fault name="OrderSubmissionFault" use="literal" />
+            </wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="OrdersService">
+        <wsdl:port name="OrdersPort" binding="tns:OrdersSoapBinding">
+            <!-- Points to the Anti-Corruption Layer -->
+            <soap:address location="http://localhost:8084/ws/orders" />
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

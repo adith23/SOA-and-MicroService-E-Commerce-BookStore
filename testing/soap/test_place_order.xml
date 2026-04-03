@@ -1,0 +1,27 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                  xmlns:v1="http://globalbooks.com/bpel/v1/placeorder" 
+                  xmlns:v11="http://globalbooks.com/order-contract/v1">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <v1:placeOrderRequest>
+         <v1:customerId>CUST-999</v1:customerId>
+         <v11:items>
+            <!-- Add multiple items here to test the BPEL loop -->
+            <v11:item>
+               <v11:bookId>101</v11:bookId>
+               <v11:quantity>2</v11:quantity>
+            </v11:item>
+            <v11:item>
+               <v11:bookId>102</v11:bookId>
+               <v11:quantity>1</v11:quantity>
+            </v11:item>
+         </v11:items>
+         <v11:shippingAddress>
+            <v11:street>123 Book Lane</v11:street>
+            <v11:city>London</v11:city>
+            <v11:country>UK</v11:country>
+            <v11:postalCode>E1 6AN</v11:postalCode>
+         </v11:shippingAddress>
+      </v1:placeOrderRequest>
+   </soapenv:Body>
+</soapenv:Envelope>

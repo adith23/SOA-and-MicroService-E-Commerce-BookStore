@@ -51,14 +51,13 @@ public class OrderService {
         order.setCurrency("USD");
         order.setCreatedAt(LocalDateTime.now());
 
-        // Enrich items with mock prices (in production: call CatalogService via SOAP)
-        List<OrderItem> enrichedItems = enrichItemsWithPrices(request.getItems());
+        List<OrderItem> enrichedItems = normalizeItems(request.getItems());
         order.setItems(enrichedItems);
 
-        // Calculate total
-        BigDecimal total = enrichedItems.stream()
-            .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal total = calculateTotal(enrichedItems);
+        if (request.getTotalAmount() != null && total.compareTo(request.getTotalAmount()) != 0) {
+            throw new IllegalArgumentException("totalAmount does not match priced order items");
+        }
         order.setTotalAmount(total);
 
         // Persist
@@ -68,6 +67,12 @@ public class OrderService {
         eventPublisher.publishOrderCreated(order);
 
         return order;
+    }
+
+    private BigDecimal calculateTotal(List<OrderItem> items) {
+        return items.stream()
+            .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
@@ -89,7 +94,7 @@ public class OrderService {
      * NOTE: In the BPEL orchestration, CatalogService.getBookPrice() is called
      * in a loop for each item. This service just stores the final enriched data.
      */
-    private List<OrderItem> enrichItemsWithPrices(List<OrderItem> items) {
+    private List<OrderItem> normalizeItems(List<OrderItem> items) {
         // Mock prices matching CatalogService in-memory catalog
         Map<String, BigDecimal> priceMap = Map.of(
             "B001", new BigDecimal("31.99"),
@@ -109,7 +114,9 @@ public class OrderService {
         );
 
         return items.stream().map(item -> {
-            BigDecimal price = priceMap.getOrDefault(item.getBookId(), new BigDecimal("9.99"));
+            BigDecimal price = item.getUnitPrice() != null
+                ? item.getUnitPrice()
+                : priceMap.getOrDefault(item.getBookId(), new BigDecimal("9.99"));
             String title     = titleMap.getOrDefault(item.getBookId(), "Unknown Title");
             return new OrderItem(item.getBookId(), title, item.getQuantity(), price);
         }).toList();

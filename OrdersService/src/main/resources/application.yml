@@ -41,6 +41,10 @@ rabbitmq:
   routing-key:
     payment: order.payment
 
+integration:
+  security:
+    trusted-machine-token: ode-demo-token
+
 # Logging
 logging:
   level:

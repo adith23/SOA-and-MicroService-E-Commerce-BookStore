@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://globalbooks.com/bpel/v1/placeorder"
+    xmlns:gbord="http://globalbooks.com/order-contract/v1"
+    xmlns:cat="http://catalog.globalbooks.com/v1"
+    xmlns:ord="http://orders.globalbooks.com/v1"
+    targetNamespace="http://globalbooks.com/bpel/v1/placeorder"
+    xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
+    name="PlaceOrderService">
+
+    <wsdl:types>
+        <xsd:schema targetNamespace="http://globalbooks.com/bpel/v1/placeorder" elementFormDefault="qualified">
+            <!-- Ensure we can import the standard order contract -->
+            <xsd:import namespace="http://globalbooks.com/order-contract/v1" schemaLocation="order-contract.xsd" />
+
+            <!-- BPEL Client Incoming Request Structure -->
+            <xsd:element name="placeOrderRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="customerId" type="xsd:string" />
+                        <xsd:element ref="gbord:items" />
+                        <xsd:element ref="gbord:shippingAddress" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- BPEL Client Outgoing Response Structure -->
+            <xsd:element name="placeOrderResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="orderId" type="xsd:string" />
+                        <xsd:element name="status" type="xsd:string" />
+                        <xsd:element name="totalAmount" type="xsd:decimal" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <!-- BPEL Fault Type -->
+            <xsd:element name="PlaceOrderFault">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="code" type="xsd:string" />
+                        <xsd:element name="message" type="xsd:string" />
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:schema>
+    </wsdl:types>
+
+    <wsdl:message name="PlaceOrderRequestMessage">
+        <wsdl:part name="parameters" element="tns:placeOrderRequest" />
+    </wsdl:message>
+
+    <wsdl:message name="PlaceOrderResponseMessage">
+        <wsdl:part name="parameters" element="tns:placeOrderResponse" />
+    </wsdl:message>
+
+    <wsdl:message name="PlaceOrderFaultMessage">
+        <wsdl:part name="parameters" element="tns:PlaceOrderFault" />
+    </wsdl:message>
+
+    <wsdl:portType name="PlaceOrderPortType">
+        <wsdl:operation name="placeOrder">
+            <wsdl:input message="tns:PlaceOrderRequestMessage" />
+            <wsdl:output message="tns:PlaceOrderResponseMessage" />
+            <wsdl:fault name="PlaceOrderFault" message="tns:PlaceOrderFaultMessage" />
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <wsdl:binding name="PlaceOrderSoapBinding" type="tns:PlaceOrderPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+        <wsdl:operation name="placeOrder">
+            <soap:operation soapAction="http://globalbooks.com/bpel/v1/placeorder/placeOrder" />
+            <wsdl:input><soap:body use="literal" /></wsdl:input>
+            <wsdl:output><soap:body use="literal" /></wsdl:output>
+            <wsdl:fault name="PlaceOrderFault"><soap:fault name="PlaceOrderFault" use="literal" /></wsdl:fault>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <wsdl:service name="PlaceOrderService">
+        <wsdl:port name="PlaceOrderPort" binding="tns:PlaceOrderSoapBinding">
+            <soap:address location="http://localhost:8080/ode/processes/PlaceOrderService" />
+        </wsdl:port>
+    </wsdl:service>
+
+    <!-- BPEL PartnerLink Types mappings for all 3 dependencies -->
+    <plnk:partnerLinkType name="PlaceOrderLinkType">
+        <plnk:role name="PlaceOrderProvider" portType="tns:PlaceOrderPortType" />
+    </plnk:partnerLinkType>
+
+    <plnk:partnerLinkType name="CatalogLinkType">
+        <plnk:role name="CatalogProvider" portType="cat:CatalogPortType" />
+    </plnk:partnerLinkType>
+
+    <plnk:partnerLinkType name="OrdersLinkType">
+        <plnk:role name="OrdersProvider" portType="ord:OrdersPortType" />
+    </plnk:partnerLinkType>
+
+</wsdl:definitions>

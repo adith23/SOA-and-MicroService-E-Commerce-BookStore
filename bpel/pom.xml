@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.globalbooks</groupId>
+    <artifactId>globalbooks-bpel</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>GlobalBooks BPEL Orchestration</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- Compress BPEL contents natively at root (NO subdirectories wrapper) -->
+                                <zip destfile="${project.build.directory}/PlaceOrder.zip"
+                                     basedir="src/main/resources"
+                                     includes="**/*" />
+                                
+                                <echo message="Built PlaceOrder.zip" />
+                                
+                                <!-- Copy to ODE if property provided -->
+                                <copy file="${project.build.directory}/PlaceOrder.zip" 
+                                      tofile="${catalina.home}/webapps/ode/WEB-INF/processes/PlaceOrder.zip" 
+                                      failonerror="false"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

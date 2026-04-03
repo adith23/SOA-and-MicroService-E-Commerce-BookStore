@@ -1,23 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  UDDI Registry Metadata Entry for GlobalBooks CatalogService
-  Q4: UDDI registration – businessEntity, businessService, bindingTemplate
 
-  This file represents the UDDI v3 data that would be submitted to Apache jUDDI.
-  Key identifiers are UUIDs generated for this project.
--->
-
-<!--
-  Equivalent UDDI API save operations:
-  1. save_business   (businessEntity)
-  2. save_service    (businessService)
-  3. save_binding    (bindingTemplate)
--->
 <uddiRegistration xmlns:uddi="urn:uddi-org:api_v3">
 
-    <!-- ============================================================ -->
-    <!-- Business Entity (GlobalBooks Inc.)                             -->
-    <!-- ============================================================ -->
     <uddi:businessEntity businessKey="uddi:globalbooks.com:business:001">
         <uddi:name xml:lang="en">GlobalBooks Inc.</uddi:name>
 
@@ -38,9 +22,6 @@
 
         <uddi:businessServices>
 
-            <!-- ======================================================= -->
-            <!-- Service 1: CatalogService (SOAP/WSDL)                     -->
-            <!-- ======================================================= -->
             <uddi:businessService
                 serviceKey="uddi:globalbooks.com:service:catalog:v1"
                 businessKey="uddi:globalbooks.com:business:001">
@@ -81,11 +62,11 @@
                             <uddi:keyedReference
                                 tModelKey="uddi:uddi.org:ubr:categorization:unspsc"
                                 keyName="Books"
-                                keyValue="55111500"/>
+                                keyValue="55111500" />
                             <uddi:keyedReference
                                 tModelKey="uddi:uddi.org:wsdl:types"
                                 keyName="portType"
-                                keyValue="CatalogPortType"/>
+                                keyValue="CatalogPortType" />
                         </uddi:categoryBag>
 
                     </uddi:bindingTemplate>
@@ -96,15 +77,15 @@
                     <uddi:keyedReference
                         tModelKey="uddi:globalbooks.com:tmodel:version"
                         keyName="Service Version"
-                        keyValue="1.0"/>
+                        keyValue="1.0" />
                     <uddi:keyedReference
                         tModelKey="uddi:globalbooks.com:tmodel:sla"
                         keyName="Availability SLA"
-                        keyValue="99.9%"/>
+                        keyValue="99.9%" />
                     <uddi:keyedReference
                         tModelKey="uddi:globalbooks.com:tmodel:sla"
                         keyName="Response Time SLA"
-                        keyValue="200ms p95"/>
+                        keyValue="200ms p95" />
                 </uddi:categoryBag>
 
             </uddi:businessService>

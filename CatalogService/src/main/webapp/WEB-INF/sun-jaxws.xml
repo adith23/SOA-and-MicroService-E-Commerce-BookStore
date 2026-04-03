@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  sun-jaxws.xml (JAX-WS RI deployment descriptor)
-  Registers the CatalogService endpoint with the WSServlet.
-  Q5: sun-jaxws.xml configuration
--->
-<endpoints xmlns="http://java.sun.com/xml/ns/jax-ws/ri/runtime"
-           version="2.0">
 
-    <endpoint
-        name="CatalogPort"
-        implementation="com.globalbooks.catalog.CatalogServiceImpl"
-        wsdl="WEB-INF/wsdl/catalog.wsdl"
-        service="{http://catalog.globalbooks.com/v1}CatalogService"
-        port="{http://catalog.globalbooks.com/v1}CatalogPort"
-        url-pattern="/catalog">
-    </endpoint>
+<endpoints xmlns="http://java.sun.com/xml/ns/jax-ws/ri/runtime"
+  version="2.0">
+
+  <endpoint
+    name="CatalogPort"
+    implementation="com.globalbooks.catalog.CatalogServiceImpl"
+    wsdl="WEB-INF/wsdl/catalog.wsdl"
+    service="{http://catalog.globalbooks.com/v1}CatalogService"
+    port="{http://catalog.globalbooks.com/v1}CatalogPort"
+    url-pattern="/catalog">
+  </endpoint>
 
 </endpoints>

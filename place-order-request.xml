@@ -1,0 +1,22 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                  xmlns:pla="http://globalbooks.com/bpel/v1/placeorder"
+                  xmlns:ordc="http://globalbooks.com/order-contract/v1">
+    <soapenv:Header/>
+    <soapenv:Body>
+        <pla:placeOrderRequest>
+            <pla:customerId>C1001</pla:customerId>
+            <ordc:items>
+                <ordc:item>
+                    <ordc:bookId>B001</ordc:bookId>
+                    <ordc:quantity>2</ordc:quantity>
+                </ordc:item>
+            </ordc:items>
+            <ordc:shippingAddress>
+                <ordc:street>1 Book Lane</ordc:street>
+                <ordc:city>London</ordc:city>
+                <ordc:country>UK</ordc:country>
+                <ordc:postalCode>EC1A 1BB</ordc:postalCode>
+            </ordc:shippingAddress>
+        </pla:placeOrderRequest>
+    </soapenv:Body>
+</soapenv:Envelope>

@@ -1,53 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  web.xml – Servlet deployment descriptor for CatalogService WAR
-  Q5: web.xml configuration
-  Uses JAX-WS RI WSServlet and WSServletContextListener.
--->
+
 <web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-             http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-         version="3.1">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+  version="3.1">
 
-    <display-name>GlobalBooks CatalogService</display-name>
-    <description>SOAP-based book catalog lookup service – GlobalBooks Inc.</description>
+  <display-name>GlobalBooks CatalogService</display-name>
+  <description>SOAP-based book catalog lookup service – GlobalBooks Inc.</description>
 
-    <!--
-      WSServletContextListener initialises the JAX-WS runtime on startup.
-      It reads sun-jaxws.xml to discover and publish endpoints.
-    -->
-    <listener>
-        <listener-class>
-            com.sun.xml.ws.transport.http.servlet.WSServletContextListener
-        </listener-class>
-    </listener>
+  <listener>
+    <listener-class>
+      com.sun.xml.ws.transport.http.servlet.WSServletContextListener
+    </listener-class>
+  </listener>
 
-    <!--
-      WSServlet handles all SOAP requests delegated by the servlet container.
-      load-on-startup=1 ensures the endpoint is ready before first request.
-    -->
-    <servlet>
-        <servlet-name>CatalogServlet</servlet-name>
-        <servlet-class>
-            com.sun.xml.ws.transport.http.servlet.WSServlet
-        </servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
 
-    <!--
-      Map the servlet to /catalog.
-      Full URL: http://localhost:8080/CatalogService/catalog
-      WSDL URL: http://localhost:8080/CatalogService/catalog?wsdl
-    -->
-    <servlet-mapping>
-        <servlet-name>CatalogServlet</servlet-name>
-        <url-pattern>/catalog</url-pattern>
-    </servlet-mapping>
+  <servlet>
+    <servlet-name>CatalogServlet</servlet-name>
+    <servlet-class>
+      com.sun.xml.ws.transport.http.servlet.WSServlet
+    </servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
 
-    <!-- Session timeout -->
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
+  <servlet-mapping>
+    <servlet-name>CatalogServlet</servlet-name>
+    <url-pattern>/catalog</url-pattern>
+  </servlet-mapping>
+
+  <session-config>
+    <session-timeout>30</session-timeout>
+  </session-config>
 
 </web-app>

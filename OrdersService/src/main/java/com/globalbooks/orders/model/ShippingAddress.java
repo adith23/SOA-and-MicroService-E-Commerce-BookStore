@@ -1,5 +1,6 @@
 package com.globalbooks.orders.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import jakarta.validation.constraints.NotBlank;
 
 /**
@@ -8,15 +9,19 @@ import jakarta.validation.constraints.NotBlank;
 public class ShippingAddress {
 
     @NotBlank(message = "street is required")
+    @JacksonXmlProperty(localName = "street", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
     private String street;
 
     @NotBlank(message = "city is required")
+    @JacksonXmlProperty(localName = "city", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
     private String city;
 
     @NotBlank(message = "country is required")
+    @JacksonXmlProperty(localName = "country", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
     private String country;
 
     @NotBlank(message = "postalCode is required")
+    @JacksonXmlProperty(localName = "postalCode", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
     private String postalCode;
 
     public ShippingAddress() {}

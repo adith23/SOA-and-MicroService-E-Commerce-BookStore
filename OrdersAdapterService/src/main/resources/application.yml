@@ -1,0 +1,14 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: orders-adapter-service
+
+globalbooks:
+  auth:
+    token-uri: http://localhost:9000/oauth2/token
+    client-id: orders-client
+    client-secret: secret
+  orders:
+    api-uri: http://localhost:8081/api/v1/orders

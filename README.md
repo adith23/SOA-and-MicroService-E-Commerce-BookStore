@@ -89,7 +89,63 @@ docker run -d --name keycloak -p 9000:8080 ^
 cd %CATALINA_HOME%\bin && startup.bat
 ```
 
-### 2. Build and Deploy CatalogService
+### 2. Build and Deploy BPEL Orchestration Process
+
+**Required:** Tomcat must be running (started in step 1)
+
+```cmd
+cd bpel
+mvn clean package
+```
+
+**What this does:**
+- Compiles BPEL specification and creates deployment package
+- Packages all artifacts (PlaceOrder.bpel, deploy.xml, WSDLs, schemas) into `PlaceOrder.zip`
+- Automatically deploys the ZIP to ODE's deployment directory: `%CATALINA_HOME%\webapps\ode\WEB-INF\processes\`
+- ODE deployment poller detects the package and activates the process
+
+**Verify deployment:**
+
+```cmd
+REM Check the package was deployed
+dir "%CATALINA_HOME%\webapps\ode\WEB-INF\processes"
+
+REM Should see: PlaceOrder.zip
+```
+
+Then check the ODE Console:
+- Open: http://localhost:8080/ode/
+- Navigate to: "Processes" tab
+- Verify: `PlaceOrder` appears with status **ACTIVE**
+
+**Troubleshooting:**
+
+If the package doesn't deploy, run the verification script:
+```cmd
+verify-bpel-deployment.bat
+```
+
+For manual deployment if Maven failover:
+```cmd
+deploy-bpel-manual.bat
+```
+
+For ODE health status:
+```cmd
+check-ode-status.bat
+```
+
+**Property Override** (if Tomcat is in a different location):
+
+```cmd
+mvn clean package -Dcatalina.home=C:\path\to\tomcat
+```
+
+Or set environment variable `CATALINA_HOME` once for all builds.
+
+---
+
+### 3. Build and Deploy CatalogService
 
 ```cmd
 cd CatalogService
@@ -97,7 +153,7 @@ mvn clean package
 copy target\CatalogService.war %CATALINA_HOME%\webapps\
 ```
 
-### 3. Start Spring Boot Services
+### 4. Start Spring Boot Services
 
 ```cmd
 :: Each in its own terminal
@@ -106,7 +162,7 @@ cd PaymentsService && mvn spring-boot:run
 cd ShippingService && mvn spring-boot:run
 ```
 
-### 4. OR use Docker Compose for OrdersService + PaymentsService + ShippingService
+### 5. OR use Docker Compose for OrdersService + PaymentsService + ShippingService
 
 ```cmd
 docker-compose up --build -d
@@ -126,6 +182,24 @@ docker-compose up --build -d
 | jUDDI GUI           | http://localhost:8080/juddi-gui/ |
 | RabbitMQ Dashboard  | http://localhost:15672 (guest/guest) |
 | Keycloak Admin      | http://localhost:9000 (admin/admin) |
+
+---
+
+## PlaceOrder Orchestration
+
+The synchronous order flow is orchestrated by Apache ODE:
+
+1. `PlaceOrder.wsdl` exposes the BPEL entry operation.
+2. `PlaceOrder.bpel` loops through order items and invokes `CatalogService.getBookPrice()` over SOAP.
+3. The same BPEL instance then invokes `OrdersService` over HTTP `POST /api/v1/orders` using the HTTP binding described in `bpel/orders.wsdl`.
+4. `OrdersService` creates the order and publishes the payment event to RabbitMQ for downstream processing.
+
+The `bpel/` deployment package contains the ODE-facing partner contracts:
+
+- `catalog.wsdl` for the existing SOAP CatalogService partner
+- `orders.wsdl` for the REST-style HTTP partner contract used for order creation
+- `order-contract.xsd` for the XML payload schema exchanged between ODE and OrdersService
+- `orders.endpoint` for the default HTTP headers used by the Orders partner, including the demo bearer token
 
 ---
 

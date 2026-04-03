@@ -3,7 +3,7 @@ package com.globalbooks.orders.controller;
 import com.globalbooks.orders.model.CreateOrderRequest;
 import com.globalbooks.orders.model.Order;
 import com.globalbooks.orders.service.OrderService;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +12,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 /**
  * REST controller for OrdersService.
@@ -36,12 +35,24 @@ public class OrderController {
      * POST /api/v1/orders
      * Create a new order.
      *
-     * Request body: CreateOrderRequest (JSON)
+     * Request body: CreateOrderRequest (JSON or XML)
      * Response: 201 Created with Location header and order body
      */
-    @PostMapping
+    @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
+                 produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        Order created = orderService.createOrder(request);
+        System.out.println("\n[OrdersService] ======= INCOMING REST REQUEST =======");
+        System.out.println("[OrdersService] Authenticated POST /api/v1/orders received.");
+        System.out.println("[OrdersService] Processing order for Customer ID: " + request.getCustomerId());
+        
+        Order created;
+        try {
+            created = orderService.createOrder(request);
+            System.out.println("[OrdersService] SUCCESS: Order created successfully. OrderId=" + created.getOrderId());
+        } catch (Exception e) {
+            System.out.println("[OrdersService] ERROR: Failed to create order: " + e.getMessage());
+            throw e;
+        }
 
         // Build Location header: /api/v1/orders/{orderId}
         URI location = ServletUriComponentsBuilder
@@ -50,6 +61,8 @@ public class OrderController {
             .buildAndExpand(created.getOrderId())
             .toUri();
 
+        System.out.println("[OrdersService] Returning 201 Created to Adapter.");
+        System.out.println("[OrdersService] =======================================\n");
         return ResponseEntity.created(location).body(created);
     }
 
@@ -59,7 +72,8 @@ public class OrderController {
      *
      * Response: 200 OK with order body, or 404 Not Found
      */
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}",
+                produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<Order> getOrderById(@PathVariable String id) {
         return orderService.getOrderById(id)
             .map(ResponseEntity::ok)
@@ -72,18 +86,9 @@ public class OrderController {
      *
      * Response: 200 OK with array of orders
      */
-    @GetMapping
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<List<Order>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
-    /**
-     * Global validation error handler – returns 400 with field details.
-     */
-    @ExceptionHandler(jakarta.validation.ConstraintViolationException.class)
-    public ResponseEntity<Map<String, String>> handleValidation(
-            jakarta.validation.ConstraintViolationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(Map.of("error", "Validation failed", "details", ex.getMessage()));
-    }
 }

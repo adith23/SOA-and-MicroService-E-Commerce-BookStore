@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy xmlns="http://www.apache.org/ode/schemas/dd/2007/03"
+    xmlns:tns="http://globalbooks.com/bpel/v1/placeorder"
+    xmlns:cat="http://catalog.globalbooks.com/v1"
+    xmlns:ord="http://orders.globalbooks.com/v1">
+
+    <process name="tns:PlaceOrderProcess">
+        <active>true</active>
+        <retired>false</retired>
+        <process-events generate="all" />
+
+        <provide partnerLink="client">
+            <service name="tns:PlaceOrderService" port="PlaceOrderPort" />
+        </provide>
+
+        <invoke partnerLink="catalogPartner">
+            <service name="cat:CatalogService" port="CatalogPort" />
+        </invoke>
+
+        <invoke partnerLink="ordersPartner">
+            <service name="ord:OrdersService" port="OrdersPort" />
+        </invoke>
+    </process>
+
+</deploy>

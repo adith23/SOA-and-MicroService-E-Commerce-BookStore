@@ -11,20 +11,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * WS-Security Handler for CatalogService.
- *
- * Implements UsernameToken authentication on inbound SOAP requests.
- * Q12: WS-Security configuration for CatalogService.
- *
- * Expected SOAP Security header:
- * <wsse:Security>
- *   <wsse:UsernameToken>
- *     <wsse:Username>catalog-client</wsse:Username>
- *     <wsse:Password>s3cur3P@ss</wsse:Password>
- *   </wsse:UsernameToken>
- * </wsse:Security>
- */
 public class WsSecurityHandler implements SOAPHandler<SOAPMessageContext> {
 
     private static final Logger LOG = Logger.getLogger(WsSecurityHandler.class.getName());

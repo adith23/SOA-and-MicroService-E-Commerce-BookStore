@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:tns="http://catalog.globalbooks.com/v1"
+    xmlns:xsdtns="http://catalog.globalbooks.com/types/v1"
+    targetNamespace="http://catalog.globalbooks.com/v1"
+    name="CatalogService">
+
+    <!-- Types -->
+    <wsdl:types>
+        <xsd:schema targetNamespace="http://catalog.globalbooks.com/types/v1"
+                    elementFormDefault="qualified">
+
+            <xsd:complexType name="Book">
+                <xsd:sequence>
+                    <xsd:element name="bookId"   type="xsd:string"/>
+                    <xsd:element name="title"    type="xsd:string"/>
+                    <xsd:element name="author"   type="xsd:string"/>
+                    <xsd:element name="isbn"     type="xsd:string"/>
+                    <xsd:element name="price"    type="xsd:decimal"/>
+                    <xsd:element name="currency" type="xsd:string"/>
+                    <xsd:element name="category" type="xsd:string" minOccurs="0"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="BookList">
+                <xsd:sequence>
+                    <xsd:element name="book" type="xsdtns:Book"
+                                 minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="PriceResponse">
+                <xsd:sequence>
+                    <xsd:element name="bookId"   type="xsd:string"/>
+                    <xsd:element name="price"    type="xsd:decimal"/>
+                    <xsd:element name="currency" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:complexType name="BookNotFoundFaultDetail">
+                <xsd:sequence>
+                    <xsd:element name="bookId"  type="xsd:string"/>
+                    <xsd:element name="message" type="xsd:string"/>
+                </xsd:sequence>
+            </xsd:complexType>
+
+            <xsd:element name="getBookByIdRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="bookId" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="getBookByIdResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="book" type="xsdtns:Book"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="getBookPriceRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="bookId" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="getBookPriceResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="priceResponse" type="xsdtns:PriceResponse"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="searchBooksRequest">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="keyword" type="xsd:string"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="searchBooksResponse">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="bookList" type="xsdtns:BookList"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+
+            <xsd:element name="BookNotFoundFault" type="xsdtns:BookNotFoundFaultDetail"/>
+        </xsd:schema>
+    </wsdl:types>
+
+    <!-- Messages -->
+    <wsdl:message name="GetBookByIdRequest">
+        <wsdl:part name="parameters" element="xsdtns:getBookByIdRequest"/>
+    </wsdl:message>
+    <wsdl:message name="GetBookByIdResponse">
+        <wsdl:part name="parameters" element="xsdtns:getBookByIdResponse"/>
+    </wsdl:message>
+
+    <wsdl:message name="GetBookPriceRequest">
+        <wsdl:part name="parameters" element="xsdtns:getBookPriceRequest"/>
+    </wsdl:message>
+    <wsdl:message name="GetBookPriceResponse">
+        <wsdl:part name="parameters" element="xsdtns:getBookPriceResponse"/>
+    </wsdl:message>
+
+    <wsdl:message name="SearchBooksRequest">
+        <wsdl:part name="parameters" element="xsdtns:searchBooksRequest"/>
+    </wsdl:message>
+    <wsdl:message name="SearchBooksResponse">
+        <wsdl:part name="parameters" element="xsdtns:searchBooksResponse"/>
+    </wsdl:message>
+
+    <wsdl:message name="BookNotFoundFault">
+        <wsdl:part name="fault" element="xsdtns:BookNotFoundFault"/>
+    </wsdl:message>
+
+    <!-- PortType -->
+    <wsdl:portType name="CatalogPortType">
+        <wsdl:operation name="getBookById">
+            <wsdl:input  message="tns:GetBookByIdRequest"/>
+            <wsdl:output message="tns:GetBookByIdResponse"/>
+            <wsdl:fault  name="BookNotFoundFault" message="tns:BookNotFoundFault"/>
+        </wsdl:operation>
+
+        <wsdl:operation name="getBookPrice">
+            <wsdl:input  message="tns:GetBookPriceRequest"/>
+            <wsdl:output message="tns:GetBookPriceResponse"/>
+            <wsdl:fault  name="BookNotFoundFault" message="tns:BookNotFoundFault"/>
+        </wsdl:operation>
+
+        <wsdl:operation name="searchBooks">
+            <wsdl:input  message="tns:SearchBooksRequest"/>
+            <wsdl:output message="tns:SearchBooksResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+
+    <!-- Binding (SOAP 1.1, Document/Literal) -->
+    <wsdl:binding name="CatalogBinding" type="tns:CatalogPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+        <wsdl:operation name="getBookById">
+            <soap:operation soapAction="http://catalog.globalbooks.com/v1/getBookById"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="BookNotFoundFault">
+                <soap:fault name="BookNotFoundFault" use="literal"/>
+            </wsdl:fault>
+        </wsdl:operation>
+
+        <wsdl:operation name="getBookPrice">
+            <soap:operation soapAction="http://catalog.globalbooks.com/v1/getBookPrice"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+            <wsdl:fault name="BookNotFoundFault">
+                <soap:fault name="BookNotFoundFault" use="literal"/>
+            </wsdl:fault>
+        </wsdl:operation>
+
+        <wsdl:operation name="searchBooks">
+            <soap:operation soapAction="http://catalog.globalbooks.com/v1/searchBooks"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+
+    <!-- Service Endpoint -->
+    <wsdl:service name="CatalogService">
+        <wsdl:port name="CatalogPort" binding="tns:CatalogBinding">
+            <soap:address location="http://localhost:8080/CatalogService/catalog"/>
+        </wsdl:port>
+    </wsdl:service>
+
+</wsdl:definitions>

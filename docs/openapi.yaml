@@ -4,7 +4,7 @@ info:
   version: "1.0.0"
   description: |
     REST API for order management in the GlobalBooks SOA.
-    Secured with OAuth2 JWT Bearer tokens (issued by Keycloak).
+    Secured with OAuth2 JWT Bearer tokens.
     Q7: REST API specification
   contact:
     name: SOA Team
@@ -40,6 +40,10 @@ paths:
                 city: "London"
                 country: "UK"
                 postalCode: "EC1A 1BB"
+              totalAmount: 103.97
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
       responses:
         '201':
           description: Order created successfully
@@ -52,14 +56,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Order'
         '400':
           description: Validation error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized – missing or invalid JWT token
+          description: Unauthorized - missing or invalid bearer token
 
     get:
       summary: List all orders
@@ -69,6 +79,11 @@ paths:
           description: List of orders
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+            application/xml:
               schema:
                 type: array
                 items:
@@ -94,6 +109,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Order'
         '404':
           description: Order not found
         '401':
@@ -105,7 +123,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: "JWT token from Keycloak – POST to /realms/globalbooks/protocol/openid-connect/token"
+      description: "JWT token for standard clients. For ODE demos, a trusted bearer token may be configured server-side."
 
   schemas:
     CreateOrderRequest:
@@ -122,6 +140,11 @@ components:
             $ref: '#/components/schemas/OrderItem'
         shippingAddress:
           $ref: '#/components/schemas/ShippingAddress'
+        totalAmount:
+          type: number
+          format: decimal
+          description: Optional for direct clients; required for BPEL-priced orders
+          example: 103.97
 
     OrderItem:
       type: object
@@ -142,7 +165,7 @@ components:
         unitPrice:
           type: number
           format: decimal
-          readOnly: true
+          description: Optional input for BPEL-priced orders; populated in responses
           example: 31.99
 
     ShippingAddress:

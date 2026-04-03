@@ -185,3 +185,20 @@ Flow: Client → BPEL → [Loop: getBookPrice()] → OrdersService → RabbitMQ 
 - **Durable Queues:** Queues and messages marked persistent; survive broker restart
 - **Prefetch Count:** Set to 10 to limit concurrent unacknowledged messages per consumer
 - **Message TTL:** 30,000ms in primary queues; expired messages route to DLQ
+
+---
+
+## 8. ODE-to-OrdersService Integration Note
+
+The executable PlaceOrder process uses Apache ODE as the synchronous orchestrator.
+
+1. `PlaceOrder.bpel` receives the client order request.
+2. The process loops through each line item and invokes `CatalogService.getBookPrice()` over SOAP.
+3. After computing the final total, ODE invokes `OrdersService` directly over HTTP `POST /api/v1/orders`.
+4. `OrdersService` persists the order, returns the created order payload, and publishes the payment event to RabbitMQ.
+
+To keep this direct integration explicit and deployable, the BPEL package includes:
+
+- `orders.wsdl` using WSDL 1.1 HTTP binding for the REST partner call
+- `order-contract.xsd` defining the XML payload exchanged between ODE and OrdersService
+- `orders.endpoint` supplying default HTTP headers for the trusted machine bearer token and XML content negotiation

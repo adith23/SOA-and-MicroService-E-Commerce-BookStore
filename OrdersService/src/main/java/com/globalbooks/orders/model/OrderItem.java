@@ -1,5 +1,6 @@
 package com.globalbooks.orders.model;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -11,14 +12,18 @@ import java.math.BigDecimal;
 public class OrderItem {
 
     @NotBlank(message = "bookId is required")
+    @JacksonXmlProperty(localName = "bookId", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
     private String bookId;
 
+    @JacksonXmlProperty(localName = "title", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
     private String title;   // populated from CatalogService
 
     @Min(value = 1, message = "quantity must be at least 1")
     @Max(value = 99, message = "quantity must not exceed 99")
+    @JacksonXmlProperty(localName = "quantity", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
     private int quantity;
 
+    @JacksonXmlProperty(localName = "unitPrice", namespace = CreateOrderRequest.ORDER_CONTRACT_NAMESPACE)
     private BigDecimal unitPrice;  // populated from CatalogService
 
     public OrderItem() {}

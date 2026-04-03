@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<process name="PlaceOrderProcess"
+    targetNamespace="http://globalbooks.com/bpel/v1/placeorder"
+    xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:tns="http://globalbooks.com/bpel/v1/placeorder"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:cat="http://catalog.globalbooks.com/v1"
+    xmlns:cattypes="http://catalog.globalbooks.com/types/v1"
+    xmlns:ord="http://orders.globalbooks.com/v1"
+    xmlns:gbord="http://globalbooks.com/order-contract/v1"
+    queryLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0"
+    expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">
+
+    <!-- Dependencies -->
+    <import location="PlaceOrder.wsdl" namespace="http://globalbooks.com/bpel/v1/placeorder"
+        importType="http://schemas.xmlsoap.org/wsdl/" />
+    <import location="catalog.wsdl" namespace="http://catalog.globalbooks.com/v1"
+        importType="http://schemas.xmlsoap.org/wsdl/" />
+    <import location="orders.wsdl" namespace="http://orders.globalbooks.com/v1"
+        importType="http://schemas.xmlsoap.org/wsdl/" />
+
+    <partnerLinks>
+        <partnerLink name="client"
+            partnerLinkType="tns:PlaceOrderLinkType"
+            myRole="PlaceOrderProvider" />
+        <partnerLink name="catalogPartner"
+            partnerLinkType="tns:CatalogLinkType"
+            partnerRole="CatalogProvider" />
+        <partnerLink name="ordersPartner"
+            partnerLinkType="tns:OrdersLinkType"
+            partnerRole="OrdersProvider" />
+    </partnerLinks>
+
+    <variables>
+        <variable name="placeOrderRequest" messageType="tns:PlaceOrderRequestMessage" />
+        <variable name="placeOrderResponse" messageType="tns:PlaceOrderResponseMessage" />
+        <variable name="placeOrderFault" messageType="tns:PlaceOrderFaultMessage" />
+
+        <variable name="priceRequest" messageType="cat:GetBookPriceRequest" />
+        <variable name="priceResponse" messageType="cat:GetBookPriceResponse" />
+        <variable name="catalogFault" messageType="cat:BookNotFoundFault" />
+
+        <variable name="createOrderRequest" messageType="ord:CreateOrderRequestMessage" />
+        <variable name="createOrderResponse" messageType="ord:CreateOrderResponseMessage" />
+        <variable name="orderSubmissionFault" messageType="ord:OrderSubmissionFaultMessage" />
+
+        <variable name="totalAmount" type="xsd:decimal" />
+        <variable name="itemCount" type="xsd:integer" />
+    </variables>
+
+    <faultHandlers>
+        <catch faultName="cat:BookNotFoundFault" faultVariable="catalogFault"
+            faultMessageType="cat:BookNotFoundFault">
+            <sequence>
+                <assign name="InitFaultBookNotFound">
+                    <copy>
+                        <from>
+                            <literal>
+                                <tns:PlaceOrderFault
+                                    xmlns:tns="http://globalbooks.com/bpel/v1/placeorder">
+                                    <tns:code></tns:code>
+                                    <tns:message></tns:message>
+                                </tns:PlaceOrderFault>
+                            </literal>
+                        </from>
+                        <to variable="placeOrderFault" part="parameters" />
+                    </copy>
+                </assign>
+                <assign name="MapBookException">
+                    <copy>
+                        <from>'BOOK_NOT_FOUND'</from>
+                        <to>$placeOrderFault.parameters/tns:code</to>
+                    </copy>
+                    <copy>
+                        <from>string($catalogFault.fault//*[local-name()='message'])</from>
+                        <to>$placeOrderFault.parameters/tns:message</to>
+                    </copy>
+                </assign>
+                <reply partnerLink="client" portType="tns:PlaceOrderPortType" operation="placeOrder"
+                    variable="placeOrderFault" faultName="tns:PlaceOrderFault" />
+            </sequence>
+        </catch>
+
+        <catch faultName="ord:OrderSubmissionFault" faultVariable="orderSubmissionFault"
+            faultMessageType="ord:OrderSubmissionFaultMessage">
+            <sequence>
+                <assign name="InitFaultSubFailed">
+                    <copy>
+                        <from>
+                            <literal>
+                                <tns:PlaceOrderFault
+                                    xmlns:tns="http://globalbooks.com/bpel/v1/placeorder">
+                                    <tns:code></tns:code>
+                                    <tns:message></tns:message>
+                                </tns:PlaceOrderFault>
+                            </literal>
+                        </from>
+                        <to variable="placeOrderFault" part="parameters" />
+                    </copy>
+                </assign>
+                <assign name="MapOrderException">
+                    <copy>
+                        <from>'ORDER_SUBMISSION_FAILED'</from>
+                        <to>$placeOrderFault.parameters/tns:code</to>
+                    </copy>
+                    <copy>
+                        <from>string($orderSubmissionFault.fault//*[local-name()='details'])</from>
+                        <to>$placeOrderFault.parameters/tns:message</to>
+                    </copy>
+                </assign>
+                <reply partnerLink="client" portType="tns:PlaceOrderPortType" operation="placeOrder"
+                    variable="placeOrderFault" faultName="tns:PlaceOrderFault" />
+            </sequence>
+        </catch>
+
+        <catchAll>
+            <sequence>
+                <assign name="InitFaultCatchAll">
+                    <copy>
+                        <from>
+                            <literal>
+                                <tns:PlaceOrderFault
+                                    xmlns:tns="http://globalbooks.com/bpel/v1/placeorder">
+                                    <tns:code></tns:code>
+                                    <tns:message></tns:message>
+                                </tns:PlaceOrderFault>
+                            </literal>
+                        </from>
+                        <to variable="placeOrderFault" part="parameters" />
+                    </copy>
+                </assign>
+                <assign name="MapGenericException">
+                    <copy>
+                        <from>'ORDER_PROCESSING_ERROR'</from>
+                        <to>$placeOrderFault.parameters/tns:code</to>
+                    </copy>
+                    <copy>
+                        <from>'The PlaceOrder process failed due to an unexpected orchestration
+                            error.'</from>
+                        <to>$placeOrderFault.parameters/tns:message</to>
+                    </copy>
+                </assign>
+                <reply partnerLink="client" portType="tns:PlaceOrderPortType" operation="placeOrder"
+                    variable="placeOrderFault" faultName="tns:PlaceOrderFault" />
+            </sequence>
+        </catchAll>
+    </faultHandlers>
+
+    <!-- Orchestration Logic -->
+    <sequence name="MainProcessSequence">
+
+        <!-- Requirement 8: Receive Activity -->
+        <receive name="ReceiveOrder" partnerLink="client" portType="tns:PlaceOrderPortType"
+            operation="placeOrder" variable="placeOrderRequest" createInstance="yes" />
+
+        <assign name="InitVariables">
+            <!-- Initialize createOrderRequest with literal template to prevent selectionFailure -->
+            <copy>
+                <from>
+                    <literal>
+                        <gbord:createOrderRequest
+                            xmlns:gbord="http://globalbooks.com/order-contract/v1">
+                            <gbord:customerId></gbord:customerId>
+                            <gbord:items></gbord:items>
+                            <gbord:shippingAddress>
+                                <gbord:street></gbord:street>
+                                <gbord:city></gbord:city>
+                                <gbord:country></gbord:country>
+                                <gbord:postalCode></gbord:postalCode>
+                            </gbord:shippingAddress>
+                            <gbord:totalAmount>0.00</gbord:totalAmount>
+                        </gbord:createOrderRequest>
+                    </literal>
+                </from>
+                <to variable="createOrderRequest" part="parameters" />
+            </copy>
+
+            <!-- Initialize priceRequest for loop -->
+            <copy>
+                <from>
+                    <literal>
+                        <cattypes:getBookPriceRequest
+                            xmlns:cattypes="http://catalog.globalbooks.com/types/v1">
+                            <cattypes:bookId></cattypes:bookId>
+                        </cattypes:getBookPriceRequest>
+                    </literal>
+                </from>
+                <to variable="priceRequest" part="parameters" />
+            </copy>
+
+            <!-- Initialize placeOrderResponse -->
+            <copy>
+                <from>
+                    <literal>
+                        <tns:placeOrderResponse
+                            xmlns:tns="http://globalbooks.com/bpel/v1/placeorder">
+                            <tns:orderId></tns:orderId>
+                            <tns:status></tns:status>
+                            <tns:totalAmount>0.00</tns:totalAmount>
+                        </tns:placeOrderResponse>
+                    </literal>
+                </from>
+                <to variable="placeOrderResponse" part="parameters" />
+            </copy>
+        </assign>
+
+        <assign name="InitPayload">
+            <copy>
+                <from>0.00</from>
+                <to variable="totalAmount" />
+            </copy>
+            <!-- Adjusted XPath: $placeOrderRequest.parameters represents the root element
+            tns:placeOrderRequest -->
+            <copy>
+                <from>count($placeOrderRequest.parameters/gbord:items/gbord:item)</from>
+                <to variable="itemCount" />
+            </copy>
+            <copy>
+                <from>string($placeOrderRequest.parameters/tns:customerId)</from>
+                <to>$createOrderRequest.parameters/gbord:customerId</to>
+            </copy>
+            <copy>
+                <from>$placeOrderRequest.parameters/gbord:items</from>
+                <to>$createOrderRequest.parameters/gbord:items</to>
+            </copy>
+            <copy>
+                <from>$placeOrderRequest.parameters/gbord:shippingAddress</from>
+                <to>$createOrderRequest.parameters/gbord:shippingAddress</to>
+            </copy>
+        </assign>
+
+        <!-- Requirement 8: Loop for price lookup -->
+        <forEach counterName="itemIndex" parallel="no" name="PriceLookupLoop">
+            <!-- Ensure loop processes correctly up to the exact count -->
+            <startCounterValue>1</startCounterValue>
+            <finalCounterValue>$itemCount</finalCounterValue>
+            <scope>
+                <sequence>
+                    <assign name="MapPriceLookup">
+                        <copy>
+                            <from>
+                                string($placeOrderRequest.parameters/gbord:items/gbord:item[round($itemIndex)]/gbord:bookId)</from>
+                            <to>$priceRequest.parameters/cattypes:bookId</to>
+                        </copy>
+                    </assign>
+
+                    <invoke name="InvokeSOAPCatalog" partnerLink="catalogPartner"
+                        portType="cat:CatalogPortType" operation="getBookPrice"
+                        inputVariable="priceRequest" outputVariable="priceResponse" />
+
+                    <assign name="CalculateCart">
+                        <copy>
+                            <from>
+                                $totalAmount +
+                                ($priceResponse.parameters//*[local-name()='price'] *
+                                $placeOrderRequest.parameters//*[local-name()='item'][round($itemIndex)]//*[local-name()='quantity'])
+                            </from>
+                            <to variable="totalAmount" />
+                        </copy>
+                    </assign>
+                </sequence>
+            </scope>
+        </forEach>
+
+        <assign name="FinalizeTotal">
+            <copy>
+                <from>$totalAmount</from>
+                <to>$createOrderRequest.parameters/gbord:totalAmount</to>
+            </copy>
+        </assign>
+
+        <!-- Requirement 8: Invocation of OrdersService (via Adapter Layer) -->
+        <invoke name="InvokeRESTAdapter" partnerLink="ordersPartner" portType="ord:OrdersPortType"
+            operation="createOrder" inputVariable="createOrderRequest"
+            outputVariable="createOrderResponse" />
+
+        <!-- Requirement 8: Reply to client -->
+        <assign name="MapFinalReply">
+            <copy>
+                <from>string($createOrderResponse.parameters/gbord:orderId)</from>
+                <to>$placeOrderResponse.parameters/tns:orderId</to>
+            </copy>
+            <copy>
+                <from>string($createOrderResponse.parameters/gbord:status)</from>
+                <to>$placeOrderResponse.parameters/tns:status</to>
+            </copy>
+            <copy>
+                <from>string($createOrderResponse.parameters/gbord:totalAmount)</from>
+                <to>$placeOrderResponse.parameters/tns:totalAmount</to>
+            </copy>
+        </assign>
+
+        <reply name="ReplyClient" partnerLink="client" portType="tns:PlaceOrderPortType"
+            operation="placeOrder" variable="placeOrderResponse" />
+    </sequence>
+</process>

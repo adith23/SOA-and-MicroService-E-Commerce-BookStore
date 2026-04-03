@@ -2,153 +2,118 @@
 
 **Document ID:** GOV-001  
 **Version:** 1.0  
-**Author:** Solution Architect / Governance Consultant  
-**Q15: SOA Governance – versioning, SLAs, lifecycle phases, compliance**
+**System:** GlobalBooks SOA Platform  
+**Applies To:** CatalogService, OrdersService, PaymentsService, ShippingService, PlaceOrder BPEL Process
 
----
+## 1. Purpose
+This policy defines how GlobalBooks services are versioned, secured, monitored, changed, and retired. Since the system is split into multiple independent services, governance is needed to avoid breaking integrations and to keep service evolution controlled.
 
-## 1. Purpose and Scope
+## 2. Scope
+This policy applies to:
+- `CatalogService` SOAP service
+- `OrdersService` REST API
+- `PaymentsService` and `ShippingService` RabbitMQ consumers
+- `PlaceOrder` BPEL orchestration
+- related contracts, registry metadata, and security policies
 
-This document defines the governance framework for all GlobalBooks SOA services (CatalogService, OrdersService, PaymentsService, ShippingService). It establishes rules for versioning, service lifecycle management, SLAs, and compliance.
+## 3. Versioning Strategy
 
----
+### 3.1 SOAP Services
+SOAP versions must be embedded in the WSDL and XML namespace.
 
-## 2. Service Versioning Policy
-
-### 2.1 SOAP Services (CatalogService)
-
-| Rule | Detail |
-|------|--------|
-| **Version location** | Embedded in WSDL `targetNamespace` as `/v1`, `/v2`, etc. |
-| **Backward compatibility** | At minimum, 2 major versions must be supported concurrently |
-| **Deprecation notice** | 6 months written notice before retiring a WSDL version |
-| **Breaking change** | Requires new `v{N+1}` namespace; never modify existing versioned WSDL |
-| **Non-breaking change** | New optional elements with `minOccurs="0"` permitted in same version |
-
-**Example:** `targetNamespace="http://catalog.globalbooks.com/v1"` → `v2` when breaking.
-
-### 2.2 REST Services (OrdersService)
-
-| Rule | Detail |
-|------|--------|
-| **Version location** | URL path segment: `/api/v1/`, `/api/v2/` |
-| **Header version** | `API-Version: 1` header also accepted for compatibility |
-| **Semantic versioning** | `MAJOR.MINOR.PATCH` for internal build tracking |
-| **Deprecation** | `Deprecation: date` + `Sunset: date` response headers on deprecated endpoints |
-
----
-
-## 3. Service Lifecycle Phases
-
-```
-Proposed → Development → Testing → Staging → Production → Deprecated → Retired
+```xml
+targetNamespace="http://catalog.globalbooks.com/v1"
+targetNamespace="http://catalog.globalbooks.com/v2"
 ```
 
-| Phase | Description | Governance Action Required |
-|-------|------------|--------------------------|
-| **Proposed** | Design document submitted to Architecture Board | Architecture review and approval |
-| **Development** | Service under construction | Code review sign-off |
-| **Testing** | Integration and QA | Test report review |
-| **Staging** | Pre-production validation | Performance SLA validation |
-| **Production** | Actively serving consumers | Monthly SLA review |
-| **Deprecated** | Sunset notice issued | Consumer migration plan |
-| **Retired** | Service decommissioned | UDDI entry removed |
+Rules:
+- breaking changes require a new namespace such as `/v2`
+- non-breaking changes may stay in the same version if backward compatibility is preserved
+- old clients using `v1` must continue to work until retirement
 
----
+### 3.2 REST Services
+REST versions must be exposed in the URL path.
 
-## 4. Service Level Agreements (SLAs)
+```text
+/api/v1/orders
+/api/v2/orders
+```
 
-### 4.1 Service Availability Targets
+Rules:
+- breaking changes require a new major path such as `/api/v2/`
+- non-breaking changes can stay in the same version
+- each public REST version must have matching OpenAPI documentation
 
-| Service | Availability Target | Measurement Window |
-|---------|--------------------|--------------------|
-| CatalogService | 99.9% | Monthly |
-| OrdersService | 99.95% | Monthly |
-| PaymentsService | 99.99% | Monthly |
-| ShippingService | 99.9% | Monthly |
+### 3.3 Messaging Contracts
+For RabbitMQ integrations, exchange names and routing keys must remain stable unless a breaking event change is introduced. If the payload changes in a breaking way, a new event version or routing key must be created.
 
-### 4.2 Response Time Targets
+## 4. SLA Targets
 
-| Service | p50 | p95 | p99 | Timeout |
-|---------|-----|-----|-----|---------|
-| CatalogService | < 50ms | < 200ms | < 500ms | 5s |
-| OrdersService | < 100ms | < 300ms | < 1000ms | 10s |
-| PaymentsService | async | N/A | N/A | 30s message TTL |
-| ShippingService | async | N/A | N/A | 30s message TTL |
-
-### 4.3 Throughput Targets
-
-| Service | Requests/sec (peak) |
+### 4.1 Availability
+| Service | Availability Target |
 |---------|---------------------|
-| CatalogService | 200 req/s |
-| OrdersService | 50 req/s |
-| PaymentsService | 50 messages/s |
-| ShippingService | 50 messages/s |
+| CatalogService | 99.9% |
+| OrdersService | 99.95% |
+| PaymentsService | 99.99% |
+| ShippingService | 99.9% |
 
----
+### 4.2 Response Time
+| Service | Target |
+|---------|--------|
+| CatalogService | p95 under 200 ms |
+| OrdersService | p95 under 300 ms |
+| PaymentsService | Asynchronous |
+| ShippingService | Asynchronous |
 
-## 5. Quality of Service (QoS) Mechanisms
+### 4.3 Operational Limits
+| Component | Limit |
+|-----------|-------|
+| CatalogService timeout | 5 s |
+| OrdersService timeout | 10 s |
+| Queue message TTL | 30,000 ms |
 
-| Mechanism | Implementation | Purpose |
-|-----------|---------------|---------|
-| **WS-Security (CatalogService)** | UsernameToken in SOAP header | Authentication & integrity |
-| **OAuth2 JWT (OrdersService)** | Keycloak-issued Bearer tokens | Auth + authorisation |
-| **RabbitMQ Publisher Confirms** | `publisher-confirm-type: correlated` | Guarantees message accepted by broker |
-| **Consumer Manual ACK** | `acknowledge-mode: manual` | Message not lost if consumer crashes |
-| **Dead Letter Queues** | `x-dead-letter-exchange: dlx.exchange` | Failed message recovery |
-| **Message TTL** | `x-message-ttl: 30000` | Prevents stale message processing |
-| **Prefetch Count** | `prefetch: 10` | Flow control / fair dispatch |
-| **Retry with Backoff** | max 3 attempts; 1s, 2s, 4s | Transient fault tolerance |
+## 5. Deprecation Strategy
+The deprecation lifecycle is:
 
----
+```text
+Active -> Deprecated -> Sunset Window -> Retired
+```
 
-## 6. Compliance and Audit
+Rules:
+- every retiring version must receive at least **6 months notice**
+- a replacement version must be published before the old one is retired
+- deprecated SOAP contracts remain available during the notice period
+- deprecated REST APIs should be documented and marked with deprecation/sunset headers
+- registry metadata must be updated when a service becomes deprecated or retired
 
-### 6.1 Standards Compliance
+Retirement process:
+1. Submit and approve a change request.
+2. Publish the replacement version.
+3. Notify consumers and allow a 6-month migration window.
+4. Mark the old version as deprecated.
+5. Retire the old version after the sunset date.
 
-| Standard | Applied To | Compliance |
-|----------|-----------|------------|
-| WS-Security 1.1 | CatalogService | ✅ UsernameToken profile |
-| WSDL 1.1 | CatalogService contract | ✅ Document/Literal style |
-| UDDI v3 | Service registry | ✅ Apache jUDDI |
-| BPEL 2.0 | PlaceOrder orchestration | ✅ Apache ODE |
-| OpenAPI 3.0 | OrdersService contract | ✅ openapi.yaml |
-| OAuth 2.0 | OrdersService security | ✅ Keycloak |
-| AMQP 0-9-1 | Async messaging | ✅ RabbitMQ |
+## 6. Security and QoS Governance
+| Area | Policy |
+|------|--------|
+| CatalogService | Secured with WS-Security UsernameToken |
+| OrdersService | Secured with OAuth2 JWT bearer tokens |
+| Messaging QoS | Use durable queues, publisher confirms, retry with backoff, DLQs, and message TTL |
 
-### 6.2 Audit Logging Requirements
+## 7. Registry and Change Governance
+- SOAP services must publish WSDL metadata and be discoverable through the service registry
+- service metadata must include owner, version, endpoint, contract location, and lifecycle status
+- contract or endpoint changes must be reflected in registry records within 5 business days
+- all public contract changes must be reviewed, and breaking changes must create a new version
 
-All services must log:
-- Request received (timestamp, caller identity, operation name)
-- Response sent (status code / SOAP result, latency)
-- Authentication events (success/failure with username)
-- Fault/error events (exception type, message)
-- Message queue events (published, consumed, dead-lettered)
-
-### 6.3 Change Management
-
-1. All service contract changes must be submitted as a **Change Request (CR)**
-2. CRs require approval from the Architecture Board before implementation
-3. Breaking changes automatically trigger a **new version** (see Section 2)
-4. Emergency hotfixes (security patches) follow an expedited 24h review cycle
-
----
-
-## 7. Service Registry Policy
-
-- All services that expose a WSDL or OpenAPI contract **must** be registered in jUDDI
-- UDDI entries must be updated within 5 business days of any endpoint or contract change
-- Deprecated services must have their UDDI entry status updated to `deprecated`
-- Retired services must have their UDDI entry deleted or marked `retired`
-
----
-
-## 8. Governance Roles
-
+## 8. Roles and Responsibilities
 | Role | Responsibility |
 |------|---------------|
-| **Solution Architect** | Architecture review, technology decisions, design oversight |
-| **Service Developer** | Implementation, unit tests, code review participation |
-| **Integration Specialist** | ESB config, BPEL processes, message routing |
-| **Security Engineer** | WS-Security, OAuth2 config, key management |
-| **Governance Consultant** | SLA monitoring, lifecycle tracking, compliance audits |
+| Solution Architect | Approves service boundaries and major version changes |
+| Service Developer | Implements and tests services according to policy |
+| Integration Developer | Maintains BPEL flows and message routing |
+| Security Engineer | Reviews WS-Security and OAuth2 controls |
+| Operations/Governance Reviewer | Monitors SLAs, lifecycle status, and retirement readiness |
+
+## 9. Summary
+This governance policy ensures that GlobalBooks services can evolve safely without disrupting consumers. SOAP services are versioned through namespaces, REST services through URL paths, and messaging contracts through controlled event evolution. SLA targets define expected reliability, and the deprecation strategy ensures that service retirement happens in a predictable and well-managed way.

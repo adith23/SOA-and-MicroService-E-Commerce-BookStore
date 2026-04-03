@@ -9,8 +9,6 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * RabbitMQ configuration for OrdersService.
- * Q10: Exchange definitions, queue configurations.
- * Q14: Publisher confirms = QoS mechanism for reliable messaging.
  */
 @Configuration
 public class RabbitMQConfig {
