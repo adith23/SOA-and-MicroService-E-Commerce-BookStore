@@ -53,11 +53,11 @@ public class PaymentsConsumer {
             LOG.info(String.format("Processing payment | orderId=%s | customerId=%s | total=%s",
                 orderId, customerId, totalAmount));
 
-            // ── Step 1: Process payment ─────────────────────────────────
+            // Step 1: Process payment
             processPayment(orderId, customerId, totalAmount);
             LOG.info("Payment processed successfully for orderId: " + orderId);
 
-            // ── Step 2: Forward to ShippingService ──────────────────────
+            // Step 2: Forward to ShippingService
             // Only reaches here if payment succeeded (no exception thrown)
             rabbitTemplate.convertAndSend(exchange, shippingRoutingKey, message);
             LOG.info("Forwarded to shipping queue for orderId: " + orderId);

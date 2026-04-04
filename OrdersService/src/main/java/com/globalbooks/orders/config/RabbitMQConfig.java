@@ -22,7 +22,7 @@ public class RabbitMQConfig {
     public static final String PAYMENT_ROUTING    = "order.payment";
     public static final String SHIPPING_ROUTING   = "order.shipping";
 
-    // ── Exchange declarations ──────────────────────────────────────────
+    // Exchange declarations 
 
     /** Topic exchange for order events – routes by routing key pattern */
     @Bean
@@ -40,7 +40,7 @@ public class RabbitMQConfig {
             .build();
     }
 
-    // ── Queue declarations ─────────────────────────────────────────────
+    // Queue declarations 
 
     /** Payments queue with DLX and TTL configured */
     @Bean
@@ -74,7 +74,7 @@ public class RabbitMQConfig {
         return QueueBuilder.durable(SHIPPING_DLQ).build();
     }
 
-    // ── Bindings ──────────────────────────────────────────────────────
+    // Bindings
 
     @Bean
     public Binding paymentsBinding() {
@@ -104,7 +104,7 @@ public class RabbitMQConfig {
             .with("shipping.dlq");
     }
 
-    // ── Template ─────────────────────────────────────────────────────
+    // Template
 
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {

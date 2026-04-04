@@ -7,8 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * RabbitMQ configuration for ShippingService.
- * Declares the shipping queue, exchange, DLQ, and bindings so the
- * consumer can start independently of the OrdersService publisher.
+ * Declares the shipping queue, exchange, DLQ, and bindings.
  */
 @Configuration
 public class RabbitMQConfig {
@@ -19,9 +18,9 @@ public class RabbitMQConfig {
     public static final String DLX_EXCHANGE     = "dlx.exchange";
     public static final String SHIPPING_ROUTING = "order.shipping";
 
-    // ── Exchange declarations ──────────────────────────────────────────
+    // Exchange declarations 
 
-    /** Topic exchange for order events – must match OrdersService */
+    /** Topic exchange for order events match OrdersService */
     @Bean
     public TopicExchange orderExchange() {
         return ExchangeBuilder.topicExchange(ORDER_EXCHANGE)
@@ -37,7 +36,7 @@ public class RabbitMQConfig {
             .build();
     }
 
-    // ── Queue declarations ─────────────────────────────────────────────
+    // Queue declarations 
 
     /** Shipping queue with DLX and TTL configured */
     @Bean
@@ -55,7 +54,7 @@ public class RabbitMQConfig {
         return QueueBuilder.durable(SHIPPING_DLQ).build();
     }
 
-    // ── Bindings ──────────────────────────────────────────────────────
+    // Bindings
 
     @Bean
     public Binding shippingBinding() {
@@ -71,7 +70,7 @@ public class RabbitMQConfig {
             .with("shipping.dlq");
     }
 
-    // ── Message converter ────────────────────────────────────────────
+    // Message converter 
 
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {

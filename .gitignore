@@ -93,3 +93,5 @@ jmeter.log
 *.jks
 
 *.docs
+.Startup Commands.md
+Startup Commands.md
